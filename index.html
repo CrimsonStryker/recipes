@@ -707,9 +707,9 @@ beefSel.addEventListener('change',()=>{if(document.getElementById('tab-day').cla
 
 // Sync from TDEE
 syncFromTdee.addEventListener('click',function(){
-  const maint = tdeeMaint.textContent.replace(' cal','');
-  if(maint && maint!=='—'){
-    dayCalTarget.value = parseInt(maint.replace(/,/g,''))||2100;
+  const target = tdeeTarget.textContent.replace(' cal','');
+  if(target && target!=='—'){
+    dayCalTarget.value = parseInt(target.replace(/,/g,''))||2100;
   }
   const prot = tdeeProtein.textContent.replace('g','');
   if(prot && prot!=='—'){
