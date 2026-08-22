@@ -87,13 +87,14 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .tdee-stat.deficit .val{color:var(--accent)}
 .tdee-stat.surplus .val{color:#2e9d5f}
 /* meal planner */
-.planner-row{display:flex;align-items:center;gap:.4rem;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.84rem}
+.planner-row{display:flex;align-items:center;gap:.3rem;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.82rem;flex-wrap:wrap}
 .planner-row:last-child{border-bottom:none}
-.planner-row .p-name{flex:1;color:var(--text-soft)}
-.planner-row .p-qty{width:52px;padding:.25rem;border-radius:6px;border:1.5px solid var(--select-border);background:var(--select-bg);color:var(--text);font-size:.82rem;text-align:center;min-height:32px;transition:background .3s,color .3s,border-color .3s}
-.planner-row .p-qty:focus{border-color:var(--accent);outline:none}
-.planner-row .p-cal{font-size:.78rem;color:var(--text-muted);min-width:45px;text-align:right}
-.planner-row .p-beef{font-size:.78rem;color:var(--text-muted);min-width:45px;text-align:right}
+.planner-row .p-name{flex:1;color:var(--text-soft);min-width:90px;font-weight:600}
+.planner-row .p-num{width:58px;padding:.25rem;border-radius:6px;border:1.5px solid var(--select-border);background:var(--select-bg);color:var(--text);font-size:.82rem;text-align:center;min-height:32px;transition:background .3s,color .3s,border-color .3s}
+.planner-row .p-num:focus{border-color:var(--accent);outline:none}
+.planner-row .p-label{font-size:.68rem;color:var(--text-muted);white-space:nowrap}
+.planner-row .p-stat{font-size:.78rem;color:var(--text-soft);min-width:50px;text-align:right;white-space:nowrap}
+.planner-row .p-stat strong{color:var(--text)}
 .grocery-list{padding:.5rem 0}
 .grocery-item{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.85rem}
 .grocery-item:last-child{border-bottom:none}
@@ -228,29 +229,32 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
 <div class="card">
   <div class="recipe-header" style="padding-bottom:1rem">
     <h1>📋 Weekly Meal Planner</h1>
-    <p>Pick how many servings of each bowl this week</p>
+    <p>Set <strong>calories per bowl</strong> and <strong>how many bowls</strong> for each recipe — grocery list auto-generates</p>
   </div>
 
   <div class="section">
-    <h2>🥩 Beef &amp; Potato Bowls</h2>
+    <h2>🥩 Bowls for the week</h2>
     <div id="plannerList"></div>
   </div>
 
   <div class="section">
     <h2>📝 Grocery List</h2>
     <div id="groceryList">
-      <p style="color:var(--text-muted);font-size:.85rem">Set servings above to generate a grocery list.</p>
+      <p style="color:var(--text-muted);font-size:.85rem">Set a calorie target and bowl count above to generate a grocery list.</p>
     </div>
   </div>
 
-  <div class="section" style="border-bottom:none">
-    <button class="btn btn-primary" id="resetPlanner" style="width:100%">🔄 Reset all servings</button>
+  <div class="section" style="border-bottom:none;display:flex;gap:.5rem">
+    <button class="btn btn-primary" id="copyWeekBtn" style="flex:1">📋 Copy meal plan</button>
+    <button class="btn btn-outline" id="resetPlanner" style="flex:1">🔄 Reset</button>
   </div>
 </div>
 <div class="share-note">
-  <strong>🥩 Grocery list note:</strong> Ground beef is the main shared ingredient. For a single recipe, we calculate exact beef. For multiple recipes, we total all beef across all servings. Buy bulk for better price. Potatoes, yogurt, produce are per-recipe.
-  <br><br>
-  <strong>🧂 Pantry items:</strong> Oil, spices, condiments (soy sauce, mustard, ketchup) are considered pantry staples — not included in grocery totals unless you're low. Check your kitchen first.
+  <strong>💡 How it works:</strong><br>
+  1. Set <strong>cal per bowl</strong> — the recipe auto-scales to match (e.g. 650 cal gives you a smaller portion)<br>
+  2. Set <strong>bowls</strong> — how many times you eat that recipe this week (e.g. 3 = prep 3 portions)<br>
+  3. Grocery list totals all scaled ingredients across all recipes<br><br>
+  <strong>🥩 Beef tip:</strong> Buy in bulk — ground beef in 1.5-2kg packs is usually cheaper per kg.
 </div>
 </div>
 
@@ -554,84 +558,184 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 //─────────────────────────────────────────────────────────────────────────────
 //  MEAL PLANNER
 //─────────────────────────────────────────────────────────────────────────────
-const plannerList = document.getElementById('plannerList');
-const groceryEl   = document.getElementById('groceryList');
-const resetBtn    = document.getElementById('resetPlanner');
+const plannerList  = document.getElementById('plannerList');
+const groceryEl    = document.getElementById('groceryList');
+const resetBtn     = document.getElementById('resetPlanner');
+const copyBtn      = document.getElementById('copyWeekBtn');
 
-// serving counts (default 0 each)
-let servings = [0,0,0,0];
+// Per-recipe state: [calPerBowl, bowlCount] for each recipe
+let bowlCal   = RECIPES.map(r => Math.round(compute(r, beefSel.value, 1).cal));
+let bowlCount = [0, 0, 0, 0];
+
+function fmt(n) { return n < 10 ? n.toFixed(1) : Math.round(n); }
 
 function renderPlanner(){
-  let h='';
-  RECIPES.forEach((r,i)=>{
-    const base=compute(r,beefSel.value,1);
-    h+=`<div class="planner-row">
-      <span class="p-name">${r.name}</span>
-      <input class="p-qty" type="number" min="0" max="30" value="${servings[i]}" data-idx="${i}">
-      <span class="p-cal">${Math.round(base.cal)} cal</span>
-      <span class="p-beef">${Math.round(r.items.find(x=>x.isBeef).g)}g</span>
+  const beefKey = beefSel.value;
+  let h = `<div style="display:grid;grid-template-columns:1fr 70px 55px 60px;gap:.3rem;padding:.3rem 0 .5rem;font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;border-bottom:2px solid var(--border)">
+    <span>Recipe</span><span style="text-align:center">Cal/bowl</span><span style="text-align:center">Bowls</span><span style="text-align:right">Total</span>
+  </div>`;
+
+  RECIPES.forEach((r, i) => {
+    const baseCal = Math.round(compute(r, beefKey, 1).cal);
+    const cal = bowlCal[i] || baseCal;
+    const cnt = bowlCount[i] || 0;
+    const scaleFactor = Math.min(3, Math.max(0.15, cal / baseCal));
+    const scaled = compute(r, beefKey, scaleFactor);
+    const totalCal = Math.round(scaled.cal * cnt);
+    const totalP = Math.round(scaled.protein * cnt);
+
+    h += `<div class="planner-row">
+      <span class="p-name">${r.short || r.name.split(' ').slice(1).join(' ')}</span>
+      <input class="p-num cal-input" type="number" min="200" max="3000" step="10" value="${cal}" data-idx="${i}" data-base="${baseCal}">
+      <input class="p-num cnt-input" type="number" min="0" max="30" value="${cnt}" data-idx="${i}">
+      <span class="p-stat">${totalCal > 0 ? `<strong>${totalCal.toLocaleString()}</strong> cal` : '—'}</span>
     </div>`;
   });
-  plannerList.innerHTML=h;
-  // bind qty inputs
-  plannerList.querySelectorAll('.p-qty').forEach(inp=>{
-    inp.addEventListener('input',function(){
-      servings[parseInt(this.dataset.idx)]=Math.max(0,parseInt(this.value)||0);
+
+  // Total row
+  let grandCal = 0, grandProt = 0, grandBowls = 0;
+  RECIPES.forEach((r, i) => {
+    const baseCal = Math.round(compute(r, beefKey, 1).cal);
+    const cal = bowlCal[i] || baseCal;
+    const cnt = bowlCount[i] || 0;
+    const scaleFactor = Math.min(3, Math.max(0.15, cal / baseCal));
+    const scaled = compute(r, beefKey, scaleFactor);
+    grandCal += Math.round(scaled.cal * cnt);
+    grandProt += Math.round(scaled.protein * cnt);
+    grandBowls += cnt;
+  });
+  h += `<div class="planner-row" style="border-bottom:none;font-weight:700;padding-top:.5rem">
+    <span class="p-name" style="color:var(--text)">Total</span>
+    <span></span>
+    <span style="text-align:center">${grandBowls}</span>
+    <span class="p-stat"><strong>${grandCal.toLocaleString()}</strong> cal</span>
+  </div>`;
+
+  plannerList.innerHTML = h;
+
+  // Bind cal inputs
+  plannerList.querySelectorAll('.cal-input').forEach(inp => {
+    inp.addEventListener('input', function(){
+      const i = parseInt(this.dataset.idx);
+      bowlCal[i] = Math.max(200, parseInt(this.value) || compute(RECIPES[i], beefKey, 1).cal);
       renderGrocery();
     });
-    inp.addEventListener('change',function(){
-      servings[parseInt(this.dataset.idx)]=Math.max(0,parseInt(this.value)||0);
+    inp.addEventListener('change', function(){
+      const i = parseInt(this.dataset.idx);
+      bowlCal[i] = Math.max(200, parseInt(this.value) || compute(RECIPES[i], beefKey, 1).cal);
       renderGrocery();
     });
   });
+
+  // Bind count inputs
+  plannerList.querySelectorAll('.cnt-input').forEach(inp => {
+    inp.addEventListener('input', function(){
+      const i = parseInt(this.dataset.idx);
+      bowlCount[i] = Math.max(0, parseInt(this.value) || 0);
+      renderGrocery();
+    });
+    inp.addEventListener('change', function(){
+      const i = parseInt(this.dataset.idx);
+      bowlCount[i] = Math.max(0, parseInt(this.value) || 0);
+      renderGrocery();
+    });
+  });
+
   renderGrocery();
 }
 
 function renderGrocery(){
-  // aggregate ingredients across all recipes
-  const agg = {}; // name -> {g: total, isBeef: bool}
-  let totalCal=0, totalProtein=0;
   const beefKey = beefSel.value;
+  const agg = {};
+  let grandCal = 0, grandProt = 0, grandBowls = 0;
 
-  RECIPES.forEach((r,ri)=>{
-    const s = servings[ri];
-    if(s<=0) return;
-    const base = compute(r,beefKey,1);
-    totalCal += base.cal * s;
-    totalProtein += base.protein * s;
-    for(const item of r.items){
-      const totalG = item.g * s;
-      if(!agg[item.n]) agg[item.n]={g:0, isBeef:item.isBeef||false};
+  RECIPES.forEach((r, i) => {
+    const cnt = bowlCount[i] || 0;
+    if (cnt <= 0) return;
+    const baseCal = Math.round(compute(r, beefKey, 1).cal);
+    const calTarget = bowlCal[i] || baseCal;
+    const scaleFactor = Math.min(3, Math.max(0.15, calTarget / baseCal));
+    const scaled = compute(r, beefKey, scaleFactor);
+
+    grandCal += Math.round(scaled.cal * cnt);
+    grandProt += Math.round(scaled.protein * cnt);
+    grandBowls += cnt;
+
+    for (const item of r.items) {
+      const totalG = item.g * scaleFactor * cnt;
+      if (!agg[item.n]) agg[item.n] = { g: 0, isBeef: item.isBeef || false };
       agg[item.n].g += totalG;
     }
   });
 
-  const hasItems = Object.keys(agg).length>0;
-  if(!hasItems){
-    groceryEl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem">Set servings above to generate a grocery list.</p>';
+  const hasItems = Object.keys(agg).length > 0;
+  if (!hasItems) {
+    groceryEl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">Set a calorie target and bowl count above to generate a grocery list.</p>';
     return;
   }
 
-  let h='';
+  let h = '';
+
   // Beef first
-  if(agg['Ground beef']){
+  if (agg['Ground beef']) {
     const bg = Math.round(agg['Ground beef'].g);
-    h+=`<div class="grocery-item"><span class="g-name">🥩 Ground beef (${beefKey})</span><span class="g-amt">${bg>=1000?(bg/1000).toFixed(1)+' kg':bg+' g'}</span></div>`;
-  }
-  // Other items
-  for(const [name,data] of Object.entries(agg)){
-    if(name==='Ground beef') continue;
-    const g = Math.round(data.g);
-    h+=`<div class="grocery-item"><span class="g-name">${name}</span><span class="g-amt">${g}g</span></div>`;
+    h += `<div class="grocery-item"><span class="g-name">🥩 Ground beef (${beefKey})</span><span class="g-amt">${bg >= 1000 ? (bg / 1000).toFixed(1) + ' kg' : bg + ' g'}</span></div>`;
   }
 
-  h+=`<div class="grocery-total">📊 Total: ${Math.round(totalCal).toLocaleString()} cal · ${Math.round(totalProtein).toLocaleString()}g protein · ${servings.reduce((a,s)=>a+s,0)} bowls</div>`;
-  groceryEl.innerHTML=h;
+  // Other ingredients
+  for (const [name, data] of Object.entries(agg)) {
+    if (name === 'Ground beef') continue;
+    const g = Math.round(data.g);
+    h += `<div class="grocery-item"><span class="g-name">${name}</span><span class="g-amt">${g >= 1000 ? (g / 1000).toFixed(1) + ' kg' : g + ' g'}</span></div>`;
+  }
+
+  h += `<div class="grocery-total">📊 ${grandCal.toLocaleString()} cal · ${Math.round(grandProt).toLocaleString()}g protein · ${grandBowls} bowls</div>`;
+  groceryEl.innerHTML = h;
 }
 
-resetBtn.addEventListener('click',()=>{
-  servings=[0,0,0,0];
+// Reset
+resetBtn.addEventListener('click', () => {
+  RECIPES.forEach((r, i) => {
+    bowlCal[i] = Math.round(compute(r, beefSel.value, 1).cal);
+    bowlCount[i] = 0;
+  });
   renderPlanner();
+});
+
+// Copy week plan
+copyBtn.addEventListener('click', () => {
+  const beefKey = beefSel.value;
+  let text = '🍔 Weekly Meal Plan\n═══════════════════\n\n';
+  let hasAny = false;
+  RECIPES.forEach((r, i) => {
+    const cnt = bowlCount[i] || 0;
+    if (cnt <= 0) return;
+    hasAny = true;
+    const baseCal = Math.round(compute(r, beefKey, 1).cal);
+    const cal = bowlCal[i] || baseCal;
+    text += `${r.name} × ${cnt}\n`;
+    text += `  ${cal} cal/bowl = ${(cal * cnt).toLocaleString()} total cal\n`;
+  });
+  if (!hasAny) {
+    text += '(No bowls planned — set bowl counts in the planner)';
+  }
+  // Copy to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = '✅ Copied!';
+      setTimeout(() => { copyBtn.textContent = '📋 Copy meal plan'; }, 2000);
+    }).catch(() => {});
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    copyBtn.textContent = '✅ Copied!';
+    setTimeout(() => { copyBtn.textContent = '📋 Copy meal plan'; }, 2000);
+  }
 });
 
 renderPlanner();
