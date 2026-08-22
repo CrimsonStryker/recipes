@@ -6,761 +6,528 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Recipe Scale Tool</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f3ef;--card-bg:#fff;--text:#1a1a1a;--text-muted:#888;--text-soft:#555;--border:#eee;--section-bg:#fafaf8;--accent:#b8422e;--accent-hover:#a33a28;--accent-light:#fef5f2;--header-bg:linear-gradient(135deg,#2d2d2d,#1a1a1a);--header-text:#fff;--header-sub:#aaa;--macro-bg:#f8f6f3;--quickpick-border:#d0ccc7;--quickpick-bg:#fff;--shadow:0 4px 24px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);--slider-bg:#ddd;--select-bg:#fff;--select-border:#d0ccc7}
+body.dark{--bg:#1a1a1a;--card-bg:#2a2a2a;--text:#e8e8e8;--text-muted:#999;--text-soft:#bbb;--border:#3a3a3a;--section-bg:#222;--accent:#e0604a;--accent-hover:#c94f3a;--accent-light:#33201c;--header-bg:linear-gradient(135deg,#1a1a1a,#111);--header-text:#e8e8e8;--header-sub:#999;--macro-bg:#2e2e2e;--quickpick-border:#4a4a4a;--quickpick-bg:#333;--shadow:0 4px 24px rgba(0,0,0,.2),0 1px 4px rgba(0,0,0,.1);--slider-bg:#555;--select-bg:#333;--select-border:#4a4a4a}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;background:var(--bg);color:var(--text);line-height:1.5;padding:1rem .75rem;min-height:100vh;transition:background .3s,color .3s}
+.container{max-width:720px;margin:0 auto}
+.recipe-card{background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;transition:background .3s}
+/* top bar */
+.top-bar{display:flex;gap:.4rem;padding:.75rem 1rem;align-items:center;background:var(--section-bg);border-bottom:1px solid var(--border);transition:background .3s,border-color .3s}
+.top-bar select{flex:1;padding:.5rem .65rem;border-radius:10px;border:1.5px solid var(--select-border);background:var(--select-bg);color:var(--text);font-size:.88rem;font-weight:600;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .6rem center;cursor:pointer;min-height:40px;transition:background .3s,color .3s,border-color .3s}
+.top-bar select:focus{border-color:var(--accent);outline:none}
+.beef-select{flex:0 0 auto;font-size:.82rem;padding:.5rem .6rem;border-radius:10px;border:1.5px solid var(--select-border);background:var(--select-bg);color:var(--text);-webkit-appearance:none;appearance:none;cursor:pointer;min-height:40px;transition:background .3s,color .3s,border-color .3s}
+.beef-select:focus{border-color:var(--accent);outline:none}
+.theme-btn{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--select-border);background:var(--select-bg);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .2s,background .3s;-webkit-tap-highlight-color:transparent}
+.theme-btn:active{transform:scale(.95)}
 
-  :root {
-    --bg: #f5f3ef;
-    --card-bg: #fff;
-    --text: #1a1a1a;
-    --text-muted: #888;
-    --text-soft: #555;
-    --border: #eee;
-    --section-bg: #fafaf8;
-    --accent: #b8422e;
-    --accent-hover: #a33a28;
-    --accent-light: #fef5f2;
-    --header-bg: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-    --header-text: #fff;
-    --header-sub: #aaa;
-    --macro-bg: #f8f6f3;
-    --quickpick-border: #d0ccc7;
-    --quickpick-bg: #fff;
-    --shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-    --slider-bg: #ddd;
-    --select-bg: #fff;
-    --select-border: #d0ccc7;
-  }
+/* header */
+.recipe-header{padding:1.25rem 1rem 1rem;background:var(--header-bg);color:var(--header-text);transition:background .3s}
+.recipe-header h1{font-size:1.3rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.15rem;line-height:1.3}
+.recipe-header p{color:var(--header-sub);font-size:.82rem}
+.recipe-header .macro-summary{margin-top:.6rem;padding:.5rem .65rem;background:rgba(0,0,0,.2);border-radius:10px;display:flex;gap:1rem;flex-wrap:wrap;font-size:.8rem}
+.recipe-header .macro-summary span{white-space:nowrap}
 
-  body.dark {
-    --bg: #1a1a1a;
-    --card-bg: #2a2a2a;
-    --text: #e8e8e8;
-    --text-muted: #999;
-    --text-soft: #bbb;
-    --border: #3a3a3a;
-    --section-bg: #222;
-    --accent: #e0604a;
-    --accent-hover: #c94f3a;
-    --accent-light: #33201c;
-    --header-bg: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
-    --header-text: #e8e8e8;
-    --header-sub: #999;
-    --macro-bg: #2e2e2e;
-    --quickpick-border: #4a4a4a;
-    --quickpick-bg: #333;
-    --shadow: 0 4px 24px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1);
-    --slider-bg: #555;
-    --select-bg: #333;
-    --select-border: #4a4a4a;
-  }
+/* slider */
+.slider-section{padding:1rem;border-bottom:1px solid var(--border);background:var(--section-bg);transition:background .3s,border-color .3s}
+.slider-section .label-row{display:flex;justify-content:space-between;font-size:.82rem;font-weight:600;color:var(--text-soft);margin-bottom:.3rem;align-items:center}
+.slider-section .label-row .val{font-weight:700;color:var(--text)}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--slider-bg);outline:none;margin:.2rem 0 .5rem;touch-action:manipulation}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid var(--card-bg);box-shadow:0 2px 8px rgba(0,0,0,.2);transition:.1s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid var(--card-bg);box-shadow:0 2px 8px rgba(0,0,0,.2)}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    padding: 1rem 0.75rem;
-    min-height: 100vh;
-    transition: background 0.3s, color 0.3s;
-  }
-  .container { max-width: 720px; margin: 0 auto; }
+/* quick pick rows */
+.qp-label{font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.5rem;margin-bottom:.3rem}
+.qp-label:first-of-type{margin-top:0}
+.quick-picks{display:flex;gap:.3rem;flex-wrap:wrap}
+.quick-pick{padding:.4rem .55rem;border-radius:18px;border:1.5px solid var(--quickpick-border);background:var(--quickpick-bg);font-size:.78rem;font-weight:600;color:var(--text-soft);cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:34px}
+.quick-pick:active{transform:scale(.96)}
+.quick-pick:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.quick-pick.active{border-color:var(--accent);background:var(--accent);color:#fff}
 
-  /* Recipe Card */
-  .recipe-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
+/* macro bar */
+.macro-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;padding:.65rem 1rem;background:var(--card-bg);border-bottom:1px solid var(--border);transition:background .3s,border-color .3s}
+.macro-item{text-align:center;padding:.55rem .1rem;border-radius:10px;background:var(--macro-bg);transition:background .3s}
+.macro-item .value{font-size:1.2rem;font-weight:700;line-height:1.2}
+.macro-item .label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-top:.05rem}
+.macro-item.calories .value{color:var(--accent)}
+.macro-item.protein .value{color:#2e9d5f}
+.macro-item.carbs .value{color:#d48a2e}
+.macro-item.fat .value{color:#8b6ebd}
 
-  /* Top bar: recipe selector + theme */
-  .top-bar {
-    display: flex;
-    gap: 0.5rem;
-    padding: 1rem 1.25rem;
-    align-items: center;
-    background: var(--section-bg);
-    border-bottom: 1px solid var(--border);
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .top-bar select {
-    flex: 1;
-    padding: 0.6rem 0.75rem;
-    border-radius: 12px;
-    border: 1.5px solid var(--select-border);
-    background: var(--select-bg);
-    color: var(--text);
-    font-size: 0.95rem;
-    font-weight: 600;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.3s, color 0.3s;
-    min-height: 44px;
-  }
-  .top-bar select:focus {
-    border-color: var(--accent);
-    outline: none;
-  }
-  .theme-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: 1.5px solid var(--select-border);
-    background: var(--select-bg);
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: border-color 0.2s, background 0.3s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .theme-btn:active { transform: scale(0.95); }
-  .theme-btn:hover { border-color: var(--accent); }
+/* ingredients */
+.ingredients{padding:1rem;border-bottom:1px solid var(--border);transition:border-color .3s}
+.ingredients h2{font-size:.9rem;font-weight:600;margin-bottom:.6rem;color:var(--text)}
+.ingredient-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.88rem;gap:.5rem}
+.ingredient-row:last-child{border-bottom:none}
+.ingredient-row .name{color:var(--text-soft);flex:1}
+.ingredient-row .amount{font-weight:600;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
 
-  /* Header */
-  .recipe-header {
-    padding: 1.5rem 1.25rem 1.25rem;
-    background: var(--header-bg);
-    color: var(--header-text);
-    transition: background 0.3s;
-  }
-  .recipe-header h1 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.2rem;
-    line-height: 1.3;
-  }
-  .recipe-header p {
-    color: var(--header-sub);
-    font-size: 0.85rem;
-  }
+/* seasoning */
+.seasoning-box{padding:.75rem 1rem;border-bottom:1px solid var(--border);transition:border-color .3s}
+.seasoning-box h2{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:.35rem}
+.seasoning-box p{font-size:.82rem;color:var(--text-soft);line-height:1.5;margin-bottom:.3rem}
+.seasoning-box .sauce{padding:.4rem .6rem;background:var(--macro-bg);border-radius:8px;margin-top:.3rem;font-size:.82rem;color:var(--text-soft);transition:background .3s}
 
-  /* Slider section */
-  .slider-section {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--section-bg);
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .slider-section label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-soft);
-    margin-bottom: 0.4rem;
-  }
-  .slider-section label span:last-child {
-    font-weight: 700;
-    color: var(--text);
-  }
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--slider-bg);
-    outline: none;
-    margin: 0.25rem 0 0.5rem;
-    touch-action: manipulation;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    border: 3px solid var(--card-bg);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: 0.1s;
-  }
-  input[type="range"]::-webkit-slider-thumb:active {
-    transform: scale(1.15);
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    border: 3px solid var(--card-bg);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
+/* instructions */
+.instructions{padding:1rem;border-bottom:1px solid var(--border);transition:border-color .3s}
+.instructions:last-of-type{border-bottom:none}
+.instructions h2{font-size:.9rem;font-weight:600;margin-bottom:.6rem;color:var(--text)}
+.instructions ol{padding-left:1.2rem;color:var(--text-soft);font-size:.86rem}
+.instructions li{margin-bottom:.5rem;line-height:1.65}
+.instructions li strong{color:var(--text)}
 
-  /* Quick picks */
-  .quick-picks {
-    display: flex;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
-    flex-wrap: wrap;
-  }
-  .quick-pick {
-    padding: 0.45rem 0.7rem;
-    border-radius: 20px;
-    border: 1.5px solid var(--quickpick-border);
-    background: var(--quickpick-bg);
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-soft);
-    cursor: pointer;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-height: 36px;
-  }
-  .quick-pick:active { transform: scale(0.96); }
-  .quick-pick:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-light);
-  }
-  .quick-pick.active {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: #fff;
-  }
+/* share */
+.share-note{background:var(--card-bg);border-radius:16px;padding:1rem 1.1rem;margin-top:.8rem;box-shadow:var(--shadow);font-size:.8rem;color:var(--text-soft);transition:background .3s,color .3s}
+.share-note strong{color:var(--text)}
+.share-note code{background:var(--section-bg);padding:.15rem .4rem;border-radius:4px;font-size:.73rem;color:var(--accent)}
+.share-note .ios-note{display:block;margin-top:.4rem;padding:.4rem .65rem;background:#fff3e0;border-radius:8px;color:#b85a00;font-size:.78rem}
+body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
 
-  /* Macro summary */
-  .macro-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .macro-item {
-    text-align: center;
-    padding: 0.6rem 0.1rem;
-    border-radius: 10px;
-    background: var(--macro-bg);
-    transition: background 0.3s;
-  }
-  .macro-item .value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-  .macro-item .label {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-top: 0.1rem;
-  }
-  .macro-item.calories .value { color: var(--accent); }
-  .macro-item.protein .value  { color: #2e9d5f; }
-  .macro-item.carbs .value    { color: #d48a2e; }
-  .macro-item.fat .value      { color: #8b6ebd; }
-
-  /* Ingredients */
-  .ingredients {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--border);
-    transition: border-color 0.3s;
-  }
-  .ingredients h2 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--text);
-  }
-  .ingredient-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
-  }
-  .ingredient-row:last-child { border-bottom: none; }
-  .ingredient-row .name { color: var(--text-soft); }
-  .ingredient-row .amount {
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-  .ingredient-row .amount small {
-    font-weight: 400;
-    color: var(--text-muted);
-  }
-
-  /* Seasoning inline */
-  .seasoning-box {
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    transition: border-color 0.3s;
-  }
-  .seasoning-box h2 {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.4rem;
-  }
-  .seasoning-box p {
-    font-size: 0.85rem;
-    color: var(--text-soft);
-    line-height: 1.5;
-  }
-
-  /* Instructions */
-  .instructions {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--border);
-    transition: border-color 0.3s;
-  }
-  .instructions h2 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--text);
-  }
-  .instructions ol {
-    padding-left: 1.25rem;
-    color: var(--text-soft);
-    font-size: 0.88rem;
-  }
-  .instructions li {
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
-  }
-
-  /* Share note */
-  .share-note {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 1.25rem;
-    margin-top: 1rem;
-    box-shadow: var(--shadow);
-    font-size: 0.82rem;
-    color: var(--text-soft);
-    transition: background 0.3s, box-shadow 0.3s, color 0.3s;
-  }
-  .share-note strong { color: var(--text); }
-  .share-note code {
-    background: var(--section-bg);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--accent);
-  }
-  .share-note .ios-note {
-    display: block;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #fff3e0;
-    border-radius: 10px;
-    color: #b85a00;
-    font-size: 0.8rem;
-  }
-  body.dark .share-note .ios-note {
-    background: #2a2010;
-    color: #e8a040;
-  }
-
-  /* Flavor badge */
-  .flavor-badge {
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    margin-left: 0.4rem;
-    vertical-align: middle;
-  }
-  .flavor-badge.taco { background: #fff3e0; color: #b85a00; }
-  .flavor-badge.greek { background: #e8f5e9; color: #2e7d32; }
-  .flavor-badge.korean { background: #fce4ec; color: #b8422e; }
-  .flavor-badge.bigmac { background: #e3f2fd; color: #1565c0; }
-  body.dark .flavor-badge.taco { background: #3a2a10; color: #e8a040; }
-  body.dark .flavor-badge.greek { background: #1a2e1a; color: #6fbf73; }
-  body.dark .flavor-badge.korean { background: #3a1a22; color: #e8604a; }
-  body.dark .flavor-badge.bigmac { background: #1a2a3a; color: #5ba0d0; }
-
-  @media (min-width: 481px) {
-    body { padding: 2rem 1rem; }
-    .recipe-header { padding: 2rem 2rem 1.5rem; }
-    .recipe-header h1 { font-size: 1.75rem; }
-    .slider-section { padding: 1.5rem 2rem; }
-    .macro-bar { padding: 1rem 2rem; }
-    .macro-item .value { font-size: 1.35rem; }
-    .ingredients { padding: 1.5rem 2rem; }
-    .instructions { padding: 1.5rem 2rem; }
-    .top-bar { padding: 1rem 2rem; }
-    .share-note { padding: 1.5rem 2rem; }
-    .seasoning-box { padding: 1rem 2rem; }
-  }
+@media(min-width:481px){
+  body{padding:2rem 1rem}
+  .recipe-header,.slider-section,.ingredients,.instructions,.seasoning-box{padding-left:2rem;padding-right:2rem}
+  .recipe-header h1{font-size:1.7rem}
+  .top-bar{padding:.85rem 2rem}
+  .macro-bar{padding:.85rem 2rem}
+  .macro-item .value{font-size:1.35rem}
+  .share-note{padding:1.5rem 2rem}
+}
 </style>
 </head>
 <body>
 <div class="container">
 
 <div class="recipe-card">
-  <!-- Top bar: recipe dropdown + theme -->
+  <!-- top bar -->
   <div class="top-bar">
-    <select id="recipeSelect" aria-label="Select recipe">
+    <select id="recipeSelect" aria-label="Recipe">
       <option value="0">🍔 Big Mac Bowl</option>
       <option value="1">🌮 Taco Bowl</option>
       <option value="2">🥘 Greek Bowl</option>
       <option value="3">🍜 Korean Bowl</option>
     </select>
-    <button class="theme-btn" id="themeToggle" aria-label="Toggle theme">🌙</button>
+    <select class="beef-select" id="beefSelect" aria-label="Beef fat %">
+      <option value="85/15">85/15</option>
+      <option value="90/10" selected>90/10</option>
+      <option value="95/5">95/5</option>
+    </select>
+    <button class="theme-btn" id="themeToggle">🌙</button>
   </div>
 
+  <!-- header -->
   <div class="recipe-header">
     <h1 id="recipeTitle">🍔 Boy Kibble Big Mac Bowl</h1>
-    <p id="recipeDesc">High-protein crispy potato &amp; beef bowl with Big Mac-style sauce</p>
+    <p id="recipeDesc">Crispy potato &amp; beef bowl · Big Mac sauce</p>
+    <div class="macro-summary">
+      <span>🔥 <span id="baseCal">1,440</span> cal</span>
+      <span>🥩 <span id="baseProtein">127</span>g protein</span>
+      <span>🍞 <span id="baseCarbs">70</span>g carbs</span>
+      <span>🧈 <span id="baseFat">71</span>g fat</span>
+      <span>⚡ <span id="beefLabel">90/10</span> beef</span>
+    </div>
   </div>
 
-  <!-- Slider -->
+  <!-- slider -->
   <div class="slider-section">
-    <label>
-      <span>Portion size</span>
-      <span id="servingLabel">1.00× · <strong id="calPreview">1,100</strong> cal</span>
-    </label>
-    <input type="range" id="scaleSlider" min="0.2" max="3.0" step="0.05" value="1.0">
+    <div class="label-row">
+      <span>Portion multiplier</span>
+      <span class="val" id="servingLabel">1.00×</span>
+    </div>
+    <input type="range" id="scaleSlider" min="0.15" max="3.0" step="0.02" value="1.0">
 
-    <div class="quick-picks">
-      <button class="quick-pick" data-cal="500">500 cal</button>
-      <button class="quick-pick" data-cal="660">660 cal</button>
-      <button class="quick-pick active" data-cal="1100">1,100 cal</button>
-      <button class="quick-pick" data-cal="1500">1,500 cal</button>
-      <button class="quick-pick" data-cal="2000">2,000 cal</button>
+    <div class="qp-label">🎯 Calorie target</div>
+    <div class="quick-picks" id="calQuickPicks">
+      <button class="quick-pick" data-target="500">500 cal</button>
+      <button class="quick-pick" data-target="750">750 cal</button>
+      <button class="quick-pick" data-target="1000">1,000 cal</button>
+      <button class="quick-pick active" data-target="1440">1,440 cal</button>
+      <button class="quick-pick" data-target="2000">2,000 cal</button>
+    </div>
+
+    <div class="qp-label">🎯 Protein goal</div>
+    <div class="quick-picks" id="proteinQuickPicks">
+      <button class="quick-pick" data-target="70">70g</button>
+      <button class="quick-pick" data-target="90">90g</button>
+      <button class="quick-pick" data-target="110">110g</button>
+      <button class="quick-pick active" data-target="127">127g</button>
+      <button class="quick-pick" data-target="150">150g</button>
     </div>
   </div>
 
-  <!-- Macro summary -->
-  <div class="macro-bar" id="macroBar">
-    <div class="macro-item calories">
-      <div class="value" id="calDisplay">1,100</div>
-      <div class="label">Calories</div>
-    </div>
-    <div class="macro-item protein">
-      <div class="value" id="proteinDisplay">83</div>
-      <div class="label">Protein</div>
-    </div>
-    <div class="macro-item carbs">
-      <div class="value" id="carbsDisplay">65</div>
-      <div class="label">Carbs</div>
-    </div>
-    <div class="macro-item fat">
-      <div class="value" id="fatDisplay">46</div>
-      <div class="label">Fat</div>
-    </div>
+  <!-- macro bar -->
+  <div class="macro-bar">
+    <div class="macro-item calories"><div class="value" id="calDisplay">1,440</div><div class="label">Calories</div></div>
+    <div class="macro-item protein"><div class="value" id="proteinDisplay">127</div><div class="label">Protein</div></div>
+    <div class="macro-item carbs"><div class="value" id="carbsDisplay">70</div><div class="label">Carbs</div></div>
+    <div class="macro-item fat"><div class="value" id="fatDisplay">71</div><div class="label">Fat</div></div>
   </div>
 
-  <!-- Ingredients -->
-  <div class="ingredients" id="ingredientsSection">
+  <!-- ingredients -->
+  <div class="ingredients">
     <h2>🥩 Main Ingredients</h2>
     <div id="ingredientList"></div>
   </div>
 
-  <!-- Seasoning note -->
+  <!-- seasoning -->
   <div class="seasoning-box" id="seasoningBox">
-    <h2>🧂 Seasoning &amp; Sauce</h2>
-    <p id="seasoningText">Salt, pepper, garlic powder, onion powder · Big Mac sauce: yogurt + light mayo + ketchup + mustard + pickles + spices</p>
+    <h2>🧂 Seasoning</h2>
+    <p id="seasoningText">Beef: 1 tsp salt · 1 tsp black pepper · 1 tsp garlic powder · 1 tsp onion powder · Potatoes: 1 tsp salt · ½ tsp pepper · 1 tsp garlic powder · 1 tsp paprika</p>
+    <div class="sauce" id="sauceText"><strong>Sauce (Big Mac-style):</strong> 150g 0% Greek yogurt · 1 tbsp light mayo · 1 tbsp ketchup · 1 tsp yellow mustard · 1 tbsp finely chopped dill pickles · ½ tsp garlic powder · ½ tsp onion powder · ½ tsp paprika · salt &amp; pepper to taste</div>
   </div>
 
-  <!-- Instructions -->
+  <!-- instructions -->
   <div class="instructions">
     <h2>👨‍🍳 Instructions</h2>
     <ol id="instructionList">
-      <li>Cut potatoes into 1cm cubes. Toss with olive oil, salt, paprika. Bake at 200°C for 30-35 min, flipping halfway, until golden and crispy.</li>
-      <li>Sear beef in a hot pan, break up, season. Cook 6-8 min until browned.</li>
-      <li>Mix sauce ingredients together. Adjust to taste.</li>
-      <li>Assemble: potatoes → beef → veg → sauce.</li>
+      <li><strong>Potatoes:</strong> Peel &amp; cube 300g potatoes into ~2cm chunks. <strong>Boil in salted water 7–8 min</strong> (fork-tender). Drain and <strong>SHAKE vigorously</strong> in colander to rough up edges. Toss with 1 tbsp olive oil, 1 tsp salt, ½ tsp pepper, 1 tsp garlic powder, 1 tsp paprika. <strong>Spread on baking sheet</strong> — don't crowd. Roast at <strong>200°C fan (ventilacija/konvekcija)</strong> for 25–30 min, flipping halfway, until golden and crispy.</li>
+      <li><strong>Beef:</strong> Heat a skillet over high. Crumble 500g lean ground beef into pan. <strong>Sear without stirring 2 min</strong> for color. Break up, season with salt, pepper, garlic powder, onion powder. Cook 6–8 min until browned with crispy edges. <strong>Drain excess fat</strong> if needed (especially with 85/15).</li>
+      <li><strong>Sauce:</strong> In a small bowl, combine <strong>150g 0% Greek yogurt + 1 tbsp light mayo + 1 tbsp ketchup + 1 tsp yellow mustard + 1 tbsp finely chopped dill pickles + ½ tsp garlic powder + ½ tsp onion powder + ½ tsp paprika</strong>. Stir. Season with salt &amp; pepper. Add <strong>1 tsp pickle juice</strong> for extra tang if desired.</li>
+      <li><strong>Assemble:</strong> Bowl → crispy potatoes → seasoned beef → diced onion (60g) → drizzle Big Mac sauce. Optional: shredded lettuce, chopped pickles on top.</li>
     </ol>
   </div>
 
-  <!-- Base prep note -->
+  <!-- base prep note -->
   <div class="instructions" style="border-bottom:none;">
-    <h2>🔥 Base Method (all bowls)</h2>
+    <h2>🔥 Base Method (all bowls follow this)</h2>
     <ol>
-      <li><strong>Potatoes:</strong> Boil 7-8 min → drain &amp; SHAKE in colander → toss with oil &amp; seasoning → roast at 200°C fan 25-30 min</li>
-      <li><strong>Beef:</strong> Sear 500g lean ground beef in hot pan, break up, season per bowl, cook through</li>
-      <li><strong>Sauce:</strong> Mix listed ingredients — all use 150g 0% Greek yogurt base</li>
+      <li><strong>Potatoes:</strong> Boil 7–8 min → drain &amp; SHAKE → toss with oil + seasoning per recipe → roast at <strong>200°C fan 25–30 min</strong></li>
+      <li><strong>Beef:</strong> Sear <strong>500g ground beef</strong> in hot pan — break up — season per recipe — cook through</li>
+      <li><strong>Sauce:</strong> All use <strong>150g 0% Greek yogurt</strong> base + ingredients per recipe</li>
     </ol>
   </div>
 </div>
 
 <div class="share-note">
-  <strong>📤 Share this file</strong> — works offline in any browser. Tap <code>Share</code> or save &amp; open in Safari.
-  <span class="ios-note">📱 <strong>iPhone:</strong> If the slider doesn't work in Telegram, tap the Share icon → <strong>Save to Files</strong>, then open from the Files app in Safari. Or tap <strong>Share → Open in Safari</strong>.</span>
-  <strong>✏️ Edit recipes:</strong> Open this file in a text editor and modify the <code>RECIPES</code> array.
+  <strong>📤 Share this link with anyone</strong> — works on iPhone, Android, desktop. Tap <strong>Share</strong> in Safari.
+  <span class="ios-note">📱 <strong>iPhone:</strong> Tap the Share icon → <strong>Add to Home Screen</strong> to save as an app. Or bookmark it.</span>
+  <br><br>
+  <strong>📊 Nutrition data:</strong> Calories based on <strong>USDA FoodData Central</strong> standard values. Beef options adjust macros automatically.
 </div>
 
 </div>
 
 <script>
-(function() {
-  'use strict';
+(function(){
+'use strict';
 
-  // ─── Recipe Data ──────────────────────────────────────────────────────────
-  const RECIPES = [
-    // 0: Big Mac Bowl
-    {
-      name: "🍔 Boy Kibble Big Mac Bowl",
-      badge: "bigmac",
-      desc: "High-protein crispy potato & beef bowl with Big Mac-style sauce",
-      ingredients: [
-        { name: "Lean ground beef (85/15)", base: 500, unit: "g", cal: 900, protein: 60, carbs: 0, fat: 72 },
-        { name: "Russet potatoes", base: 300, unit: "g", cal: 233, protein: 6, carbs: 54, fat: 0 },
-        { name: "Greek yogurt (0%)", base: 150, unit: "g", cal: 80, protein: 14, carbs: 6, fat: 0 },
-        { name: "Low-fat mayo", base: 20, unit: "ml", cal: 30, protein: 0, carbs: 1, fat: 3 },
-        { name: "Ketchup", base: 15, unit: "ml", cal: 15, protein: 0, carbs: 4, fat: 0 },
-        { name: "Diced onion", base: 60, unit: "g", cal: 24, protein: 1, carbs: 5, fat: 0 },
-        { name: "Pickles (chopped)", base: 40, unit: "g", cal: 5, protein: 0, carbs: 1, fat: 0 },
-        { name: "Olive oil", base: 15, unit: "ml", cal: 120, protein: 0, carbs: 0, fat: 14 },
-        { name: "Mustard", base: 10, unit: "g", cal: 10, protein: 0, carbs: 1, fat: 0 }
-      ],
-      seasonings: "Salt, pepper, garlic powder, onion powder, paprika",
-      sauce: "Big Mac Sauce: 0% yogurt + light mayo + ketchup + mustard + chopped pickles + garlic powder + onion powder + paprika",
-      instructions: [
-        "Cut potatoes into 1cm cubes. Boil 7-8 min, drain & SHAKE in colander. Toss with olive oil, salt, garlic powder, paprika. Spread on baking sheet. Bake at 200°C fan for 25-30 min, flipping halfway.",
-        "Sear 500g lean beef in a hot skillet. Break up, season with salt, pepper, garlic powder, onion powder. Cook 6-8 min until browned and crispy.",
-        "Sauce: mix yogurt, mayo, ketchup, mustard, chopped pickles, paprika, garlic powder, onion powder, salt, pepper. Adjust tanginess with pickle juice.",
-        "Assemble: crispy potatoes → seasoned beef → diced onion → drizzle sauce. Optional: shredded lettuce on top."
-      ]
-    },
-    // 1: Taco Bowl
-    {
-      name: "🌮 Taco Bowl",
-      badge: "taco",
-      desc: "Mexican-spiced beef bowl with lime crema — warm cumin & chili",
-      ingredients: [
-        { name: "Lean ground beef (85/15)", base: 500, unit: "g", cal: 900, protein: 60, carbs: 0, fat: 72 },
-        { name: "Russet potatoes", base: 300, unit: "g", cal: 233, protein: 6, carbs: 54, fat: 0 },
-        { name: "Greek yogurt (0%)", base: 150, unit: "g", cal: 80, protein: 14, carbs: 6, fat: 0 },
-        { name: "Tomato paste", base: 15, unit: "g", cal: 14, protein: 1, carbs: 3, fat: 0 },
-        { name: "Diced onion", base: 60, unit: "g", cal: 24, protein: 1, carbs: 5, fat: 0 },
-        { name: "Tomato", base: 100, unit: "g", cal: 18, protein: 1, carbs: 4, fat: 0 },
-        { name: "Olive oil", base: 15, unit: "ml", cal: 120, protein: 0, carbs: 0, fat: 14 },
-        { name: "Lettuce (shredded)", base: 50, unit: "g", cal: 8, protein: 1, carbs: 1, fat: 0 }
-      ],
-      seasonings: "Cumin (1 tsp), chili powder (1 tsp), garlic powder (1 tsp), tomato paste",
-      sauce: "Lime Crema: 0% yogurt + juice of ½ lemon + chili flakes + salt. Thin with water.",
-      instructions: [
-        "Cut potatoes into 1cm cubes. Boil 7-8 min, drain & SHAKE. Toss with olive oil, cumin, paprika, salt. Bake at 200°C fan 25-30 min.",
-        "Sear beef with cumin, chili powder, garlic powder, and tomato paste. Let it caramelize slightly. Salt to taste.",
-        "Sauce: mix yogurt, lemon juice, chili flakes, salt. Thin with a splash of water.",
-        "Assemble: potatoes → taco beef → diced onion, tomato, lettuce → drizzle lime crema. Optional: jalapeño."
-      ]
-    },
-    // 2: Greek Bowl
-    {
-      name: "🥘 Greek Bowl",
-      badge: "greek",
-      desc: "Mediterranean oregano-lemon beef with tzatziki — light & fresh",
-      ingredients: [
-        { name: "Lean ground beef (85/15)", base: 500, unit: "g", cal: 900, protein: 60, carbs: 0, fat: 72 },
-        { name: "Russet potatoes", base: 300, unit: "g", cal: 233, protein: 6, carbs: 54, fat: 0 },
-        { name: "Greek yogurt (0%)", base: 150, unit: "g", cal: 80, protein: 14, carbs: 6, fat: 0 },
-        { name: "Cucumber", base: 100, unit: "g", cal: 15, protein: 1, carbs: 4, fat: 0 },
-        { name: "Tomato", base: 100, unit: "g", cal: 18, protein: 1, carbs: 4, fat: 0 },
-        { name: "Red onion", base: 40, unit: "g", cal: 16, protein: 0, carbs: 4, fat: 0 },
-        { name: "Olive oil", base: 15, unit: "ml", cal: 120, protein: 0, carbs: 0, fat: 14 },
-        { name: "Lemon", base: 0.5, unit: "piece", cal: 12, protein: 0, carbs: 4, fat: 0 }
-      ],
-      seasonings: "Dried oregano (1 tsp), garlic (2 cloves), lemon juice, salt, pepper",
-      sauce: "Tzatziki: 0% yogurt + grated cucumber (squeezed dry) + garlic + dill + splash of vinegar/lemon + salt",
-      instructions: [
-        "Cut potatoes into 1cm cubes. Boil 7-8 min, drain & SHAKE. Toss with olive oil, oregano, lemon zest, salt. Bake at 200°C fan 25-30 min.",
-        "Sear beef with oregano, minced garlic, salt, pepper. Cook through. Finish with a squeeze of lemon.",
-        "Sauce: grate cucumber, squeeze out water. Mix with yogurt, minced garlic, dill, vinegar/lemon, salt.",
-        "Assemble: potatoes → Greek beef → diced cucumber, tomato, red onion → tzatziki. Optional: olives."
-      ]
-    },
-    // 3: Korean Bowl
-    {
-      name: "🍜 Korean Bowl",
-      badge: "korean",
-      desc: "Savory soy-ginger beef with gochujang crema — umami bomb",
-      ingredients: [
-        { name: "Lean ground beef (85/15)", base: 500, unit: "g", cal: 900, protein: 60, carbs: 0, fat: 72 },
-        { name: "Russet potatoes", base: 300, unit: "g", cal: 233, protein: 6, carbs: 54, fat: 0 },
-        { name: "Greek yogurt (0%)", base: 150, unit: "g", cal: 80, protein: 14, carbs: 6, fat: 0 },
-        { name: "Soy sauce", base: 30, unit: "ml", cal: 15, protein: 2, carbs: 2, fat: 0 },
-        { name: "Spring onion", base: 30, unit: "g", cal: 10, protein: 1, carbs: 2, fat: 0 },
-        { name: "Sesame seeds", base: 5, unit: "g", cal: 28, protein: 1, carbs: 1, fat: 2 },
-        { name: "Olive oil", base: 15, unit: "ml", cal: 120, protein: 0, carbs: 0, fat: 14 },
-        { name: "Garlic", base: 10, unit: "g", cal: 15, protein: 1, carbs: 3, fat: 0 }
-      ],
-      seasonings: "Soy sauce (2 tbsp), ginger (1 tsp), garlic (2 cloves), chili flakes/gochugaru (1 tsp)",
-      sauce: "Gochujang Crema: 0% yogurt + gochugaru/chili paste + garlic + sesame seeds + salt",
-      instructions: [
-        "Cut potatoes into 1cm cubes. Boil 7-8 min, drain & SHAKE. Toss with olive oil and just salt (sauce carries flavor). Bake at 200°C fan 25-30 min.",
-        "Sear beef with soy sauce, minced garlic, ginger, chili flakes. Let it caramelize slightly for deep umami flavor.",
-        "Sauce: mix yogurt with gochugaru (or sweet paprika+chili+soy sauce), minced garlic, sesame seeds, salt.",
-        "Assemble: potatoes → Korean beef → sliced spring onion, sesame seeds → gochujang crema. Optional: shredded carrot."
-      ]
-    }
-  ];
+// ── USDA nutrition data (per 100g, raw) ────────────────────────────────
+const BEEF = {
+  '85/15': { cal:215, protein:18.6, carbs:0, fat:15 },
+  '90/10': { cal:176, protein:21.1, carbs:0, fat:10 },
+  '95/5':  { cal:137, protein:21.4, carbs:0, fat:5 }
+};
 
-  // ─── DOM refs ────────────────────────────────────────────────────────────
-  const recipeSelect  = document.getElementById('recipeSelect');
-  const themeToggle   = document.getElementById('themeToggle');
-  const slider        = document.getElementById('scaleSlider');
-  const servLabel     = document.getElementById('servingLabel');
-  const calPreview    = document.getElementById('calPreview');
-  const ingList       = document.getElementById('ingredientList');
-  const calDisp       = document.getElementById('calDisplay');
-  const protDisp      = document.getElementById('proteinDisplay');
-  const carbDisp      = document.getElementById('carbsDisplay');
-  const fatDisp       = document.getElementById('fatDisplay');
-  const quickBtns     = document.querySelectorAll('.quick-pick');
-  const recipeTitle   = document.getElementById('recipeTitle');
-  const recipeDesc    = document.getElementById('recipeDesc');
-  const seasoningText = document.getElementById('seasoningText');
-  const instList      = document.getElementById('instructionList');
+const INGRED = {
+  POTATO:     { cal:77,   protein:1.7,  carbs:17.5, fat:0.1 },
+  YOGURT:     { cal:59,   protein:10,   carbs:4,    fat:0.4 },
+  MAYO:       { cal:330,  protein:0.3,  carbs:3,    fat:33 },
+  KETCHUP:    { cal:101,  protein:1,    carbs:27,   fat:0.1 },
+  MUSTARD:    { cal:66,   protein:4,    carbs:6,    fat:3 },
+  PICKLE:     { cal:11,   protein:0.3,  carbs:2.3,  fat:0.1 },
+  ONION:      { cal:40,   protein:1.1,  carbs:9,    fat:0.1 },
+  OIL:        { cal:884,  protein:0,    carbs:0,    fat:100 },
+  TOMATO:     { cal:18,   protein:0.9,  carbs:3.9,  fat:0.2 },
+  CUCUMBER:   { cal:15,   protein:0.7,  carbs:3.6,  fat:0.2 },
+  LETTUCE:    { cal:17,   protein:1.2,  carbs:3.3,  fat:0.3 },
+  TOMATO_PASTE:{ cal:82,  protein:4,    carbs:19,   fat:0.5 },
+  LEMON:      { cal:29,   protein:1.1,  carbs:9,    fat:0.3 },
+  SPRING_ONION:{ cal:32,  protein:1.8,  carbs:7,    fat:0.2 },
+  SESAME:     { cal:573,  protein:17,   carbs:23,   fat:50 },
+  SOY_SAUCE:  { cal:53,   protein:4.8,  carbs:4.7,  fat:0.6 },
+  GARLIC:     { cal:149,  protein:6.4,  carbs:33,   fat:0.5 },
+  RED_ONION:  { cal:40,   protein:1.1,  carbs:9,    fat:0.1 }
+};
+// lookup helper (key from INGRED)
+function m(n){return INGRED[n];}
 
-  // ─── State ────────────────────────────────────────────────────────────────
-  let currentIdx = 0;
-  let scale = 1.0;
+// ── Recipes ──────────────────────────────────────────────────────────────
+const RECIPES = [
+{ // 0 Big Mac
+  name:'🍔 Boy Kibble Big Mac Bowl',
+  desc:'Crispy potatoes · seasoned beef · Big Mac-style yogurt sauce',
+  baseBeefG:500, basePotatoG:300,
+  items:[
+    {n:'Ground beef',  isBeef:true,   g:500},
+    {n:'Russet potatoes', i:'POTATO', g:300},
+    {n:'Greek yogurt (0%)', i:'YOGURT', g:150},
+    {n:'Olive oil',      i:'OIL',    g:14},
+    {n:'Diced onion',     i:'ONION',  g:60},
+    {n:'Light mayo',      i:'MAYO',   g:20},
+    {n:'Dill pickles',    i:'PICKLE', g:40},
+  ],
+  seasoning:'Beef: 1 tsp salt · 1 tsp black pepper · 1 tsp garlic powder · 1 tsp onion powder · Potatoes: 1 tsp salt · ½ tsp pepper · 1 tsp garlic powder · 1 tsp paprika',
+  sauce:'<strong>Sauce (Big Mac-style):</strong> 150g 0% Greek yogurt · 1 tbsp light mayo · 1 tbsp ketchup · 1 tsp yellow mustard · 1 tbsp finely chopped dill pickles · ½ tsp garlic powder · ½ tsp onion powder · ½ tsp paprika · salt & pepper to taste',
+  steps:[
+    '<strong>Potatoes:</strong> Peel & cube into ~2cm chunks. <strong>Boil in salted water 7–8 min</strong> (fork-tender). Drain and <strong>SHAKE vigorously</strong> in colander. Toss with 1 tbsp olive oil, 1 tsp salt, ½ tsp pepper, 1 tsp garlic powder, 1 tsp paprika. <strong>Spread on baking sheet</strong>. Roast at <strong>200°C fan (ventilacija/konvekcija)</strong> 25–30 min, flip halfway.',
+    '<strong>Beef:</strong> Heat skillet high. Crumble into pan. <strong>Sear 2 min without stirring</strong>. Break up, season. Cook 6–8 min until browned. <strong>Drain excess fat</strong> if needed.',
+    '<strong>Sauce:</strong> Mix yogurt + mayo + ketchup + mustard + chopped pickles + spices. Add 1 tsp pickle juice for tang if desired. Season to taste.',
+    '<strong>Assemble:</strong> Bowl → crispy potatoes → seasoned beef → diced onion → sauce. Optional: shredded lettuce, extra pickles.'
+  ]
+},
+{ // 1 Taco
+  name:'🌮 Taco Bowl',
+  desc:'Cumin-chili beef · crispy potatoes · lime crema',
+  baseBeefG:500, basePotatoG:300,
+  items:[
+    {n:'Ground beef',  isBeef:true,   g:500},
+    {n:'Russet potatoes', i:'POTATO', g:300},
+    {n:'Greek yogurt (0%)', i:'YOGURT', g:150},
+    {n:'Olive oil',      i:'OIL',    g:14},
+    {n:'Diced onion',     i:'ONION',  g:60},
+    {n:'Tomato',          i:'TOMATO', g:100},
+    {n:'Tomato paste',    i:'TOMATO_PASTE', g:15},
+  ],
+  seasoning:'Beef: 1 tbsp cumin · 1 tsp chili powder · 1 tsp garlic powder · 1 tbsp tomato paste · salt to taste · Potatoes: 1 tsp cumin · 1 tsp paprika · 1 tsp salt',
+  sauce:'<strong>Lime Crema:</strong> 150g 0% Greek yogurt + juice of ½ lemon + ½ tsp chili flakes + salt. Thin with water to drizzling consistency.',
+  steps:[
+    '<strong>Potatoes:</strong> Boil 7–8 min, drain & SHAKE. Toss with olive oil, cumin, paprika, salt. Roast at 200°C fan 25–30 min, flip halfway.',
+    '<strong>Beef:</strong> Sear hot pan. Add cumin, chili powder, garlic powder, tomato paste. Let it caramelize slightly. Salt to taste.',
+    '<strong>Lime Crema:</strong> Mix yogurt + lemon juice + chili flakes + salt. Add splash of water to thin.',
+    '<strong>Assemble:</strong> Potatoes → taco beef → diced onion, tomato → lime crema. Optional: shredded lettuce, jalapeño.'
+  ]
+},
+{ // 2 Greek
+  name:'🥘 Greek Bowl',
+  desc:'Oregano-lemon beef · crispy potatoes · tzatziki sauce',
+  baseBeefG:500, basePotatoG:300,
+  items:[
+    {n:'Ground beef',  isBeef:true,   g:500},
+    {n:'Russet potatoes', i:'POTATO', g:300},
+    {n:'Greek yogurt (0%)', i:'YOGURT', g:150},
+    {n:'Olive oil',      i:'OIL',    g:14},
+    {n:'Tomato',          i:'TOMATO', g:100},
+    {n:'Cucumber',        i:'CUCUMBER', g:100},
+    {n:'Red onion',       i:'RED_ONION', g:40},
+  ],
+  seasoning:'Beef: 2 tsp dried oregano · 2 cloves garlic (minced) · salt · pepper · squeeze of ½ lemon · Potatoes: 1 tsp oregano · zest of ½ lemon · 1 tsp salt',
+  sauce:'<strong>Tzatziki:</strong> Grate ¼ cucumber, squeeze dry. Mix with 150g yogurt + 1 clove minced garlic + 1 tsp dried dill + 1 tbsp lemon juice + salt.',
+  steps:[
+    '<strong>Potatoes:</strong> Boil 7–8 min, drain & SHAKE. Toss with olive oil, oregano, lemon zest, salt. Roast at 200°C fan 25–30 min.',
+    '<strong>Beef:</strong> Sear with oregano, minced garlic, salt, pepper. Cook through. Finish with a squeeze of lemon.',
+    '<strong>Tzatziki:</strong> Grate cucumber, squeeze out water thoroughly. Mix with yogurt + minced garlic + dill + lemon juice + salt.',
+    '<strong>Assemble:</strong> Potatoes → Greek beef → diced tomato, cucumber, red onion → tzatziki. Optional: olives.'
+  ]
+},
+{ // 3 Korean
+  name:'🍜 Korean Bowl',
+  desc:'Soy-ginger beef · crispy potatoes · gochujang crema',
+  baseBeefG:500, basePotatoG:300,
+  items:[
+    {n:'Ground beef',  isBeef:true,   g:500},
+    {n:'Russet potatoes', i:'POTATO', g:300},
+    {n:'Greek yogurt (0%)', i:'YOGURT', g:150},
+    {n:'Olive oil',      i:'OIL',    g:14},
+    {n:'Soy sauce',      i:'SOY_SAUCE', g:30},
+    {n:'Spring onion',   i:'SPRING_ONION', g:30},
+    {n:'Sesame seeds',   i:'SESAME', g:5},
+    {n:'Garlic',         i:'GARLIC', g:10},
+  ],
+  seasoning:'Beef: 2 tbsp soy sauce · 1 tsp grated ginger · 2 cloves garlic (minced) · 1 tsp gochugaru/chili flakes · Potatoes: just salt (sauce carries flavor)',
+  sauce:'<strong>Gochujang Crema:</strong> 150g 0% Greek yogurt + 1 tsp gochugaru (or sweet paprika+chili mix) + 1 clove minced garlic + 1 tsp sesame seeds + salt.',
+  steps:[
+    '<strong>Potatoes:</strong> Boil 7–8 min, drain & SHAKE. Toss with olive oil + just oil and salt (sauce carries the flavor). Roast 200°C fan 25–30 min.',
+    '<strong>Beef:</strong> Sear. Add soy sauce, minced garlic, ginger, chili flakes. Let caramelize — deep umami flavor.',
+    '<strong>Gochujang Crema:</strong> Mix yogurt + gochugaru (or sweet paprika+chili+soy) + minced garlic + sesame seeds + salt.',
+    '<strong>Assemble:</strong> Potatoes → Korean beef → sliced spring onion + sesame seeds → gochujang crema. Optional: shredded carrot, cucumber.'
+  ]
+}
+];
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-  function fmtNum(n) {
-    return n < 10 ? n.toFixed(1) : Math.round(n).toLocaleString();
+// ── DOM refs ───────────────────────────────────────────────────────────────
+const recipeSel  = document.getElementById('recipeSelect');
+const beefSel    = document.getElementById('beefSelect');
+const themeBtn   = document.getElementById('themeToggle');
+const slider     = document.getElementById('scaleSlider');
+const servLabel  = document.getElementById('servingLabel');
+const ingList    = document.getElementById('ingredientList');
+const calDisp    = document.getElementById('calDisplay');
+const protDisp   = document.getElementById('proteinDisplay');
+const carbDisp   = document.getElementById('carbsDisplay');
+const fatDisp    = document.getElementById('fatDisplay');
+const calQuick   = document.querySelectorAll('#calQuickPicks .quick-pick');
+const protQuick  = document.querySelectorAll('#proteinQuickPicks .quick-pick');
+const titleEl    = document.getElementById('recipeTitle');
+const descEl     = document.getElementById('recipeDesc');
+const baseCal    = document.getElementById('baseCal');
+const baseProt   = document.getElementById('baseProtein');
+const baseCarb   = document.getElementById('baseCarbs');
+const baseFat    = document.getElementById('baseFat');
+const beefLabel  = document.getElementById('beefLabel');
+const seasoningEl= document.getElementById('seasoningText');
+const sauceEl    = document.getElementById('sauceText');
+const instList   = document.getElementById('instructionList');
+
+// ── State ──────────────────────────────────────────────────────────────────
+let recipeIdx = 0;
+let scale = 1.0;
+let lastPicker = 'cal'; // 'cal' | 'protein' | 'slider'
+
+// ── Compute macros for recipe at given beef + scale ──────────────────────
+function compute(recipe, beefKey, s) {
+  const beef = BEEF[beefKey];
+  let totalCal=0, totalP=0, totalC=0, totalF=0;
+  const items = [];
+  for (const item of recipe.items) {
+    const g = item.g * s;
+    let macros;
+    if (item.isBeef) macros = { cal:beef.cal, protein:beef.protein, carbs:beef.carbs, fat:beef.fat };
+    else macros = m(item.i);
+    const cal   = macros.cal * g / 100;
+    const prot  = macros.protein * g / 100;
+    const carb  = macros.carbs * g / 100;
+    const fat   = macros.fat * g / 100;
+    totalCal += cal; totalP += prot; totalC += carb; totalF += fat;
+    items.push({name:item.n, g, unit: item.isBeef ? 'g' : 'g', display:formatAmount(g)});
   }
+  return { cal:totalCal, protein:totalP, carbs:totalC, fat:totalF, items };
+}
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-  function render() {
-    const recipe = RECIPES[currentIdx];
-    const s = scale;
-    let totalCal = 0, totalProt = 0, totalCarb = 0, totalFat = 0;
+function formatAmount(n) {
+  if (n < 2) return n.toFixed(1);
+  return Math.round(n);
+}
 
-    // Ingredient rows
-    let html = '';
-    for (const ing of recipe.ingredients) {
-      const amt = ing.base * s;
-      const u = ing.unit;
-      let display;
-      if (u === 'piece' || u === 'serving')
-        display = amt < 2 ? amt.toFixed(1) : Math.round(amt);
-      else if (amt < 3)
-        display = amt.toFixed(1);
-      else
-        display = Math.round(amt);
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const recipe = RECIPES[recipeIdx];
+  const beefKey = beefSel.value;
+  const r = compute(recipe, beefKey, scale);
+  const cal = Math.round(r.cal);
+  const prot = Math.round(r.protein);
+  const carb = Math.round(r.carbs);
+  const fat = Math.round(r.fat);
 
-      totalCal  += ing.cal * s;
-      totalProt += ing.protein * s;
-      totalCarb += ing.carbs * s;
-      totalFat  += ing.fat * s;
+  // macro bar
+  calDisp.textContent = cal.toLocaleString();
+  protDisp.textContent = prot;
+  carbDisp.textContent = carb;
+  fatDisp.textContent = fat;
 
-      html += `<div class="ingredient-row">
-        <span class="name">${ing.name}</span>
-        <span class="amount">${display} <small>${u}</small></span>
-      </div>`;
-    }
-    ingList.innerHTML = html;
+  // header macro summary (base = scale 1.0)
+  const base = compute(recipe, beefKey, 1.0);
+  baseCal.textContent = Math.round(base.cal).toLocaleString();
+  baseProt.textContent = Math.round(base.protein);
+  baseCarb.textContent = Math.round(base.carbs);
+  baseFat.textContent = Math.round(base.fat);
+  beefLabel.textContent = beefKey;
 
-    // Macros
-    calDisp.textContent  = Math.round(totalCal).toLocaleString();
-    protDisp.textContent = Math.round(totalProt);
-    carbDisp.textContent = Math.round(totalCarb);
-    fatDisp.textContent  = Math.round(totalFat);
+  // title
+  titleEl.textContent = recipe.name;
+  descEl.textContent = recipe.desc;
 
-    // Slider label
-    servLabel.innerHTML = `${scale.toFixed(2)}× · <strong>${Math.round(totalCal).toLocaleString()}</strong> cal`;
-
-    // Update recipe header
-    recipeTitle.textContent = recipe.name;
-    recipeDesc.textContent  = recipe.desc;
-
-    // Seasoning & sauce
-    seasoningText.textContent = `${recipe.seasonings} · ${recipe.sauce}`;
-
-    // Instructions
-    let instHtml = '';
-    for (const step of recipe.instructions) {
-      instHtml += `<li>${step}</li>`;
-    }
-    instList.innerHTML = instHtml;
-
-    // Highlight nearest quick-pick
-    const cal = Math.round(totalCal);
-    let best = null, bestDiff = Infinity;
-    quickBtns.forEach(btn => {
-      const diff = Math.abs(cal - parseInt(btn.dataset.cal));
-      if (diff < bestDiff) { bestDiff = diff; best = btn; }
-    });
-    quickBtns.forEach(btn => btn.classList.toggle('active', btn === best && bestDiff < 100));
+  // ingredient list
+  let html = '';
+  for (const item of r.items) {
+    html += `<div class="ingredient-row"><span class="name">${item.name}</span><span class="amount">${item.display} <small>g</small></span></div>`;
   }
+  ingList.innerHTML = html;
 
-  // ─── Slider events (both input + change for iOS) ────────────────────────
-  function onSliderUpdate() {
-    scale = parseFloat(slider.value);
-    render();
+  // slider label
+  servLabel.textContent = `${scale.toFixed(2)}× · ${cal.toLocaleString()} cal`;
+
+  // seasoning
+  seasoningEl.textContent = recipe.seasoning;
+  sauceEl.innerHTML = recipe.sauce;
+
+  // instructions
+  let instHtml = '';
+  for (const step of recipe.steps) {
+    instHtml += `<li>${step}</li>`;
   }
-  slider.addEventListener('input', onSliderUpdate);
-  slider.addEventListener('change', onSliderUpdate);
+  instList.innerHTML = instHtml;
 
-  // ─── Quick picks ──────────────────────────────────────────────────────────
-  quickBtns.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      const recipe = RECIPES[currentIdx];
-      const baseCal = recipe.ingredients.reduce((s, i) => s + i.cal, 0);
-      const target = parseInt(this.dataset.cal);
-      scale = Math.min(3.0, Math.max(0.2, target / baseCal));
-      slider.value = scale;
-      render();
-    });
-    // Touch support
-    btn.addEventListener('touchstart', function(e) {
-      // Just ensure touch doesn't interfere — click handles it
-    }, { passive: true });
-  });
+  // highlight nearest quick-pick
+  calQuick.forEach(b => b.classList.toggle('active', Math.abs(cal - parseInt(b.dataset.target)) < 100));
+  protQuick.forEach(b => b.classList.toggle('active', Math.abs(prot - parseInt(b.dataset.target)) < 10));
+}
 
-  // ─── Recipe selector ──────────────────────────────────────────────────────
-  recipeSelect.addEventListener('change', function() {
-    currentIdx = parseInt(this.value);
-    // Recalculate scale to maintain current calorie target if possible
-    const recipe = RECIPES[currentIdx];
-    const baseCal = recipe.ingredients.reduce((s, i) => s + i.cal, 0);
-    // Reset scale to 1.0 when switching recipes
-    scale = 1.0;
-    slider.value = scale;
-    render();
-  });
-
-  // ─── Theme toggle ─────────────────────────────────────────────────────────
-  let darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-  function applyTheme() {
-    document.body.classList.toggle('dark', darkMode);
-    themeToggle.textContent = darkMode ? '☀️' : '🌙';
-    try { localStorage.setItem('recipe-tool-theme', darkMode ? 'dark' : 'light'); } catch(e) {}
-  }
-
-  themeToggle.addEventListener('click', function() {
-    darkMode = !darkMode;
-    applyTheme();
-  });
-
-  // Restore saved theme
-  try {
-    const saved = localStorage.getItem('recipe-tool-theme');
-    if (saved === 'dark') darkMode = true;
-    if (saved === 'light') darkMode = false;
-  } catch(e) {}
-  applyTheme();
-
-  // ─── Init ─────────────────────────────────────────────────────────────────
+// ── Handlers ───────────────────────────────────────────────────────────────
+// slider
+function onSlider() {
+  scale = parseFloat(slider.value);
+  lastPicker = 'slider';
   render();
+}
+slider.addEventListener('input', onSlider);
+slider.addEventListener('change', onSlider);
 
+// calorie quick picks
+calQuick.forEach(btn => {
+  btn.addEventListener('click', function(){
+    const recipe = RECIPES[recipeIdx];
+    const beefKey = beefSel.value;
+    const baseMacro = compute(recipe, beefKey, 1.0);
+    const target = parseInt(this.dataset.target);
+    scale = Math.min(3.0, Math.max(0.15, target / baseMacro.cal));
+    slider.value = scale;
+    lastPicker = 'cal';
+    render();
+  });
+});
+
+// protein quick picks
+protQuick.forEach(btn => {
+  btn.addEventListener('click', function(){
+    const recipe = RECIPES[recipeIdx];
+    const beefKey = beefSel.value;
+    const baseMacro = compute(recipe, beefKey, 1.0);
+    const target = parseInt(this.dataset.target);
+    scale = Math.min(3.0, Math.max(0.15, target / baseMacro.protein));
+    slider.value = scale;
+    lastPicker = 'protein';
+    render();
+  });
+});
+
+// recipe switch
+recipeSel.addEventListener('change', function(){
+  recipeIdx = parseInt(this.value);
+  scale = 1.0;
+  slider.value = scale;
+  render();
+});
+
+// beef fat change
+beefSel.addEventListener('change', function(){
+  // When beef changes, recompute. Keep same calorie target if last pick was cal, or protein target if protein
+  const recipe = RECIPES[recipeIdx];
+  const beefKey = this.value;
+  if (lastPicker === 'cal') {
+    // Find which cal button was active
+    const activeCal = document.querySelector('#calQuickPicks .quick-pick.active');
+    if (activeCal) {
+      const target = parseInt(activeCal.dataset.target);
+      const baseMacro = compute(recipe, beefKey, 1.0);
+      scale = Math.min(3.0, Math.max(0.15, target / baseMacro.cal));
+      slider.value = scale;
+    }
+  } else if (lastPicker === 'protein') {
+    const activeProt = document.querySelector('#proteinQuickPicks .quick-pick.active');
+    if (activeProt) {
+      const target = parseInt(activeProt.dataset.target);
+      const baseMacro = compute(recipe, beefKey, 1.0);
+      scale = Math.min(3.0, Math.max(0.15, target / baseMacro.protein));
+      slider.value = scale;
+    }
+  }
+  render();
+});
+
+// theme
+let dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+function applyTheme(){
+  document.body.classList.toggle('dark', dark);
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  try{localStorage.setItem('recipe-theme', dark?'dark':'light');}catch(e){}
+}
+themeBtn.addEventListener('click', ()=>{dark=!dark; applyTheme();});
+try{const s=localStorage.getItem('recipe-theme'); if(s==='dark')dark=true; if(s==='light')dark=false;}catch(e){}
+applyTheme();
+
+// init
+render();
 })();
 </script>
 </body>
