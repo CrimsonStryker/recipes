@@ -952,23 +952,67 @@ resetBtn.addEventListener('click',()=>{
 
 copyBtn.addEventListener('click',()=>{
   const beefKey=beefSel.value;
-  let text='🍔 Weekly Meal Plan\n═══════════════════\n\n';
+  let text='🍔 Weekly Meal Plan + Grocery List\n═══════════════════════════════\n\n';
+
+  // Build aggregated grocery list the same way as renderGrocery
+  const agg = {};
+  let grandCal=0, grandProt=0, grandBowls=0;
   let hasAny=false;
-  MEALS.forEach(meal=>{
-    const idxs=getRecipesForMeal(meal);
-    const items=idxs.map(i=>({idx:i, r:RECIPES[i]})).filter(x=>(bowlCount[x.idx]||0)>0);
-    if(items.length===0) return;
-    text+=`${MEAL_LABELS[meal]}\n`;
-    items.forEach(({idx,r})=>{
-      hasAny=true;
-      const cal=bowlCal[idx]||Math.round(compute(r,beefKey,1).cal);
-      const cnt=bowlCount[idx]||0;
-      text+=`  ${r.short||r.name} × ${cnt} — ${cal} cal each\n`;
-    });
-    text+='\n';
+
+  RECIPES.forEach((r,i)=>{
+    const cnt = bowlCount[i]||0;
+    if(cnt<=0) return;
+    hasAny=true;
+    const baseCal = Math.round(compute(r, beefKey, 1).cal);
+    const calTarget = bowlCal[i] || baseCal;
+    const sf = Math.min(3, Math.max(0.15, calTarget / baseCal));
+    const scaled = compute(r, beefKey, sf);
+    grandCal += Math.round(scaled.cal * cnt);
+    grandProt += Math.round(scaled.protein * cnt);
+    grandBowls += cnt;
+    for(const item of r.items){
+      const totalG = item.g * sf * cnt;
+      if(!agg[item.n]) agg[item.n]={g:0, isBeef:item.isBeef||false};
+      agg[item.n].g += totalG;
+    }
   });
-  if(!hasAny) text+='(No meals planned)\n';
-  text+=`\nBeef: ${beefKey}`;
+
+  if(!hasAny){
+    text+='(No meals planned — set bowl counts in the Planner tab)';
+  } else {
+    // Meal plan section
+    text+='MEAL PLAN\n';
+    MEALS.forEach(meal=>{
+      const idxs=getRecipesForMeal(meal);
+      const items=idxs.map(i=>({idx:i, r:RECIPES[i]})).filter(x=>(bowlCount[x.idx]||0)>0);
+      if(items.length===0) return;
+      text+=`${MEAL_LABELS[meal]}\n`;
+      items.forEach(({idx,r})=>{
+        const cal=bowlCal[idx]||Math.round(compute(r,beefKey,1).cal);
+        const cnt=bowlCount[idx]||0;
+        text+=`  ${r.short||r.name} × ${cnt} — ${cal} cal each\n`;
+      });
+      text+='\n';
+    });
+
+    // Grocery list section
+    text+='GROCERY LIST\n';
+    if(agg['Ground beef']){
+      const bg=Math.round(agg['Ground beef'].g);
+      text+=`🥩 Ground beef (${beefKey}): ${bg>=1000?(bg/1000).toFixed(1)+' kg':bg+' g'}\n`;
+    }
+    if(agg['Ground turkey (93/7)']){
+      const bg=Math.round(agg['Ground turkey (93/7)'].g);
+      text+=`🦃 Ground turkey: ${bg>=1000?(bg/1000).toFixed(1)+' kg':bg+' g'}\n`;
+    }
+    for(const [name,data] of Object.entries(agg)){
+      if(name==='Ground beef'||name==='Ground turkey (93/7)') continue;
+      const g=Math.round(data.g);
+      text+=`${name}: ${g>=1000?(g/1000).toFixed(1)+' kg':g+' g'}\n`;
+    }
+    text+=`\n📊 ${grandCal.toLocaleString()} cal · ${Math.round(grandProt).toLocaleString()}g protein · ${grandBowls} servings\n`;
+  }
+
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(()=>{
       copyBtn.textContent='✅ Copied!';
