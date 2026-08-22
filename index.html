@@ -106,6 +106,11 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .day-slot .ds-cal:focus{border-color:var(--accent);outline:none}
 .day-slot .ds-macro{font-size:.72rem;color:var(--text-muted);min-width:55px;text-align:right}
 .day-slot .ds-macro strong{color:var(--text-soft)}
+.day-slot .ds-toggle{-webkit-appearance:none;appearance:none;width:20px;height:20px;border:2px solid var(--quickpick-border);border-radius:4px;background:var(--quickpick-bg);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;min-height:20px}
+.day-slot .ds-toggle:checked{border-color:var(--green);background:var(--green)}
+.day-slot .ds-toggle:checked::after{content:'✓';color:#fff;font-size:.75rem;font-weight:700;line-height:1}
+.day-slot.disabled{opacity:.4}
+.day-slot.disabled .ds-select,.day-slot.disabled .ds-cal{pointer-events:none;background:var(--border)}
 .day-progress{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.35rem}
 .day-stat{background:var(--macro-bg);border-radius:8px;padding:.5rem .6rem;flex:1;min-width:100px;text-align:center;transition:background .3s}
 .day-stat .val{font-size:1.2rem;font-weight:700}
@@ -127,6 +132,8 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .share-note code{background:var(--section-bg);padding:.15rem .4rem;border-radius:4px;font-size:.73rem;color:var(--accent)}
 .share-note .ios-note{display:block;margin-top:.4rem;padding:.4rem .65rem;background:#fff3e0;border-radius:8px;color:#b85a00;font-size:.78rem}
 body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
+
+@media print{body{background:#fff!important;color:#000!important;padding:0!important}.tab-bar,.tab-btn,.top-bar,.beef-select,.theme-btn,.meal-picks,.slider-section,.quick-picks,.qp-label,.share-note,.btn,#syncFromTdee,#addToWeekBtn,#resetDayBtn,#resetPlanner,#copyWeekBtn{display:none!important}.tab-content{display:block!important}.tab-content:not(.active){display:none!important}.card{box-shadow:none!important;border-radius:0!important;margin-bottom:.5rem!important}.recipe-header{background:#333!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.macro-bar,.day-progress{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body.dark .card{background:#fff!important}body.dark .section{color:#000!important}body.dark .section h2{color:#000!important}body.dark .ingredient-row .name{color:#444!important}body.dark .ingredient-row .amount{color:#000!important}input[type=range]{display:none!important}.day-slot .ds-toggle,.day-slot.disabled{opacity:1!important}.day-slot.disabled .ds-select,.day-slot.disabled .ds-cal{background:var(--border)!important}}
 @media(min-width:481px){
   body{padding:2rem 1rem}
   .section,.slider-section,.seasoning-box,.top-bar,.meal-picks{padding-left:2rem;padding-right:2rem}
@@ -236,6 +243,7 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
   <div class="section" id="daySlots">
     <!-- Breakfast -->
     <div class="day-slot">
+      <input class="ds-toggle" type="checkbox" checked data-slot="breakfast">
       <span class="ds-meal">🌅 Breakfast</span>
       <select class="ds-select" data-slot="breakfast"></select>
       <input class="ds-cal" type="number" min="100" max="2000" step="10" value="500" data-slot="breakfast">
@@ -243,6 +251,7 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
     </div>
     <!-- Lunch -->
     <div class="day-slot">
+      <input class="ds-toggle" type="checkbox" checked data-slot="lunch">
       <span class="ds-meal">🥩 Lunch</span>
       <select class="ds-select" data-slot="lunch"></select>
       <input class="ds-cal" type="number" min="100" max="3000" step="10" value="800" data-slot="lunch">
@@ -250,6 +259,7 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
     </div>
     <!-- Dinner -->
     <div class="day-slot">
+      <input class="ds-toggle" type="checkbox" checked data-slot="dinner">
       <span class="ds-meal">🌙 Dinner</span>
       <select class="ds-select" data-slot="dinner"></select>
       <input class="ds-cal" type="number" min="100" max="3000" step="10" value="700" data-slot="dinner">
@@ -257,6 +267,7 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
     </div>
     <!-- Snacks -->
     <div class="day-slot">
+      <input class="ds-toggle" type="checkbox" checked data-slot="snack">
       <span class="ds-meal">🍿 Snacks</span>
       <select class="ds-select" data-slot="snack"></select>
       <input class="ds-cal" type="number" min="0" max="2000" step="10" value="300" data-slot="snack">
@@ -292,8 +303,9 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
       </div>
     </div>
     <div style="margin-top:.6rem;display:flex;gap:.5rem">
-      <button class="btn btn-primary" id="addToWeekBtn" style="flex:1">📋 Add to weekly planner</button>
-      <button class="btn btn-outline" id="resetDayBtn" style="flex:1">🔄 Reset day</button>
+      <button class="btn btn-primary" id="addToWeekBtn" style="flex:1">📋 Add to week</button>
+      <button class="btn btn-outline" id="printDayBtn" style="flex:0 0 auto;font-size:.78rem">🖨️ Print</button>
+      <button class="btn btn-outline" id="resetDayBtn" style="flex:1">🔄 Reset</button>
     </div>
   </div>
 </div>
@@ -301,10 +313,11 @@ body.dark .share-note .ios-note{background:#2a2010;color:#e8a040}
 <div class="share-note">
   <strong>💡 How it works:</strong><br>
   1. Set your <strong>daily targets</strong> (or sync from TDEE tab)<br>
-  2. Pick a <strong>recipe</strong> for each meal slot — dropdowns are filtered by meal category<br>
-  3. Set <strong>calories per meal</strong> — the recipe auto-scales to match<br>
-  4. Bar fills show progress: <span style="color:var(--green)">🟢 on target</span> · <span style="color:#d48a2e">🟡 close</span> · <span style="color:var(--accent)">🔴 over</span><br>
-  5. <strong>Add to week</strong> sends these exact meals to the Weekly Planner tab
+  2. ✅ <strong>Uncheck meals you skip</strong> — e.g. unchecked Dinner = not counted<br>
+  3. Pick a <strong>recipe</strong> for each meal slot — dropdowns filtered by category<br>
+  4. Set <strong>calories per meal</strong> — recipe auto-scales<br>
+  5. Bar fills show progress: <span style="color:var(--green)">🟢 on target</span> · <span style="color:#d48a2e">🟡 close</span> · <span style="color:var(--accent)">🔴 over</span><br>
+  6. <strong>Add to week</strong> sends checked meals to Weekly Planner · <strong>Print</strong> for PDF/paper
 </div>
 </div>
 
@@ -575,7 +588,7 @@ const resetDayBtn=document.getElementById('resetDayBtn'), syncFromTdee=document.
 const addToWeekBtn=document.getElementById('addToWeekBtn');
 
 // Day state: {breakfast: {recipeIdx, calTarget}, lunch: ..., dinner: ..., snack: ...}
-let dayState = {breakfast:{recipeIdx:0,calTarget:500}, lunch:{recipeIdx:0,calTarget:800}, dinner:{recipeIdx:0,calTarget:700}, snack:{recipeIdx:0,calTarget:300}};
+let dayState = {breakfast:{recipeIdx:0,calTarget:500,enabled:true}, lunch:{recipeIdx:0,calTarget:800,enabled:true}, dinner:{recipeIdx:0,calTarget:700,enabled:true}, snack:{recipeIdx:0,calTarget:300,enabled:true}};
 
 function getRecipeIdxForSlot(slot, selectEl){
   const recipes = getRecipesForMeal(slot);
@@ -617,8 +630,21 @@ function updateDayTotals(){
   ['breakfast','lunch','dinner','snack'].forEach(slot => {
     const sel = document.querySelector(`.ds-select[data-slot="${slot}"]`);
     const calInp = document.querySelector(`.ds-cal[data-slot="${slot}"]`);
+    const toggle = document.querySelector(`.ds-toggle[data-slot="${slot}"]`);
     const macroEl = document.getElementById(`ds-macro-${slot}`);
-    if(!sel||!calInp) return;
+    const slotEl = toggle?.closest('.day-slot');
+    if(!sel||!calInp||!toggle) return;
+
+    // Enable/disable visual
+    const enabled = toggle.checked;
+    if(slotEl) slotEl.classList.toggle('disabled', !enabled);
+
+    if(!enabled){
+      macroEl.innerHTML = '—';
+      dayState[slot] = {recipeIdx: (getRecipesForMeal(slot)[0]||0), calTarget: parseInt(calInp.value)||300, enabled: false};
+      return;
+    }
+
     const recipes = getRecipesForMeal(slot);
     const recIdx = recipes[parseInt(sel.value)];
     const r = RECIPES[recIdx];
@@ -636,7 +662,7 @@ function updateDayTotals(){
     macroEl.innerHTML = `<strong>${Math.round(scaled.cal)}</strong> cal · ${Math.round(scaled.protein)}g protein`;
 
     // Save to dayState
-    dayState[slot] = {recipeIdx: recIdx, calTarget: targetCal};
+    dayState[slot] = {recipeIdx: recIdx, calTarget: targetCal, enabled: true};
   });
 
   // Update totals
@@ -659,9 +685,9 @@ function updateDayTotals(){
   dayProtStat.className = 'day-stat' + (protPct > 105 ? ' over' : protPct >= 90 ? '' : '');
 }
 
-// Bind day slot events (delegated)
+// Bind day slot events (delegated) — also handle toggles
 document.getElementById('daySlots').addEventListener('change', function(e){
-  const el=e.target.closest('.ds-select,.ds-cal');
+  const el=e.target.closest('.ds-select,.ds-cal,.ds-toggle');
   if(!el) return;
   updateDayTotals();
 });
@@ -697,16 +723,32 @@ syncFromTdee.addEventListener('click',function(){
 // Reset day
 resetDayBtn.addEventListener('click',function(){
   ['breakfast','lunch','dinner','snack'].forEach(slot=>{
-    dayState[slot]={recipeIdx:(getRecipesForMeal(slot)[0]||0),calTarget:500};
+    const toggle = document.querySelector(`.ds-toggle[data-slot="${slot}"]`);
+    if(toggle) toggle.checked = true;
+    const calInp = document.querySelector(`.ds-cal[data-slot="${slot}"]`);
+    if(calInp) calInp.value = slot==='snack'?300:500;
+    const sel = document.querySelector(`.ds-select[data-slot="${slot}"]`);
+    if(sel) sel.selectedIndex = 0;
+    dayState[slot]={recipeIdx:(getRecipesForMeal(slot)[0]||0),calTarget: parseInt(calInp?.value)||500, enabled: true};
   });
   renderDaySlots();
   updateDayTotals();
 });
 
-// Add to week planner
+// Print / Export PDF
+const printBtn = document.getElementById('printDayBtn');
+if(printBtn){
+  printBtn.addEventListener('click',function(){
+    window.print();
+  });
+}
+
+// Add to week planner — skip disabled slots
 addToWeekBtn.addEventListener('click',function(){
   const beefKey=beefSel.value;
   ['breakfast','lunch','dinner','snack'].forEach(slot=>{
+    const toggle = document.querySelector(`.ds-toggle[data-slot="${slot}"]`);
+    if(!toggle || !toggle.checked) return; // skip disabled
     const sel=document.querySelector(`.ds-select[data-slot="${slot}"]`);
     const calInp=document.querySelector(`.ds-cal[data-slot="${slot}"]`);
     if(!sel||!calInp) return;
@@ -722,7 +764,7 @@ addToWeekBtn.addEventListener('click',function(){
   document.querySelector('[data-tab="planner"]').classList.add('active');
   document.getElementById('tab-planner').classList.add('active');
   this.textContent='✅ Added!';
-  setTimeout(()=>{this.textContent='📋 Add to weekly planner';},2000);
+  setTimeout(()=>{this.textContent='📋 Add to week';},2000);
 });
 
 renderDaySlots();
